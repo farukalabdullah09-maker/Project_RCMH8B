@@ -235,6 +235,7 @@
                             <th class="py-2.5 px-3">শিক্ষার্থীর নাম</th>
                             <th class="py-2.5 px-3">রক্তের গ্রুপ</th>
                             <th class="py-2.5 px-3">বিভাগ</th>
+                            <th class="py-2.5 px-3">মোবাইল</th>
                             <th class="py-2.5 px-3">সেশন</th>
                             <th class="py-2.5 px-3">জেলা</th>
                             <th class="py-2.5 px-3">রাজনৈতিক পরিচয়</th>
@@ -511,12 +512,10 @@
         }
 
         window.saveHallData = function() {
-            // লোকাল স্টোরেজে সেভ রাখা হচ্ছে যাতে ব্রাউজারে রিলোড দিলে ডাটা মুছে না যায়
             localStorage.setItem('hallDataJSON', JSON.stringify(window.hallData));
             renderDashboard();
         };
 
-        // ডাটা লোড করার জন্য fetch() মেকানিজম (GitHub-এর hall-data.json ব্যাকআপ ফাইল থেকে রিড করার জন্য)
         function loadHallDataFromJSON() {
             fetch('hall-data.json')
                 .then(response => {
@@ -545,7 +544,6 @@
                 });
         }
 
-        // পেজ লোড হওয়ার পর ডাটা ফেচ করা হবে
         window.addEventListener('DOMContentLoaded', () => {
             loadHallDataFromJSON();
         });
@@ -784,6 +782,7 @@
                                     </div>
                                     <div class="text-xs text-slate-300/90 mt-2 space-y-0.5">
                                         <div><span class="opacity-75">বিভাগ:</span> ${seat.dept || '-'}</div>
+                                        <div><span class="opacity-75">মোবাইল:</span> ${seat.phone || '-'}</div>
                                         <div class="flex justify-between">
                                             <span><span class="opacity-75">সেশন:</span> ${seat.session || '-'}</span>
                                             <span><span class="opacity-75">জেলা:</span> ${seat.district || '-'}</span>
@@ -1002,9 +1001,10 @@
                             const bloodMatch = (seat.bloodGroup || '').toLowerCase().includes(query);
                             const districtMatch = (seat.district || '').toLowerCase().includes(query);
                             const sessionMatch = (seat.session || '').toLowerCase().includes(query);
+                            const phoneMatch = (seat.phone || '').toLowerCase().includes(query);
                             const roomMatch = room.roomNo.toLowerCase().includes(query);
 
-                            if (!nameMatch && !deptMatch && !bloodMatch && !districtMatch && !sessionMatch && !roomMatch) return;
+                            if (!nameMatch && !deptMatch && !bloodMatch && !districtMatch && !sessionMatch && !phoneMatch && !roomMatch) return;
                         }
 
                         matchCount++;
@@ -1038,6 +1038,7 @@
                             </td>
                             <td class="py-2.5 px-3">${bloodDisplay}</td>
                             <td class="py-2.5 px-3">${seat.dept || '-'}</td>
+                            <td class="py-2.5 px-3">${seat.phone || '-'}</td>
                             <td class="py-2.5 px-3">${seat.session || '-'}</td>
                             <td class="py-2.5 px-3">${seat.district || '-'}</td>
                             <td class="py-2.5 px-3">
@@ -1052,7 +1053,7 @@
 
             document.getElementById('search-count').innerText = matchCount;
             if (matchCount === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="py-4 text-center text-slate-500 italic">কোনো শিক্ষার্থী বা তথ্য পাওয়া যায়নি</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" class="py-4 text-center text-slate-500 italic">কোনো শিক্ষার্থী বা তথ্য পাওয়া যায়নি</td></tr>`;
             }
         };
 
