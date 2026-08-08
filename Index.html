@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="bn" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>হল আসন ব্যবস্থাপনা ও শিক্ষার্থী ট্র্যাকিং সিস্টেম</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Hind Siliguri', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { fontFamily: 'Hind Siliguri', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        .admin-only { display: none !important; }
+        body.is-admin .admin-only { display: inline-flex !important; }
+        body.is-admin div.admin-only { display: flex !important; }
+        body.is-admin button.admin-only { display: inline-flex !important; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-blue-600 selection:text-white">
+
+    <!-- Header -->
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-xl shadow-lg shadow-blue-500/20 text-white">
+                    <i class="fa-solid fa-building-columns text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                        হল আসন ব্যবস্থাপনা ড্যাশবোর্ড
+                        <span class="text-xs font-normal px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> JSON Sync
+                        </span>
+                    </h1>
+                    <p class="text-xs text-slate-400">৮টি ব্লক (A-H), রুম ও সিট বরাদ্দ এবং লোকাল জেসন ডাটাবেস ব্যবস্থা</p>
+                </div>
+            </div>
+
+            <!-- Global Quick Actions & Secret Login -->
+            <div class="flex items-center gap-2">
+                <div class="admin-only gap-2 items-center">
+                    <button onclick="exportData()" title="ডাটা ডাউনলোড করুন" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-download text-xs text-emerald-400"></i> ব্যাকআপ এক্সপোর্ট
+                    </button>
+                    <button onclick="triggerImport()" title="ডাটা আপলোড করুন" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-upload text-xs text-blue-400"></i> ইমপোর্ট
+                    </button>
+                    <input type="file" id="import-file-input" class="hidden" accept=".json" onchange="importData(event)">
+                    <button onclick="resetDataToDefault()" title="ডিফল্ট ডাটায় রিসেট করুন" class="px-3 py-2 bg-rose-950/60 hover:bg-rose-900/80 text-rose-300 border border-rose-800/80 rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-rotate text-xs"></i> রিসেট
+                    </button>
+                </div>
+                
+                <!-- Transparent, Small Secret Admin Login Trigger Button -->
+                <button onclick="toggleAdminAccess()" id="secret-admin-btn" title="Help" class="bg-transparent text-slate-600 hover:text-slate-400 transition-colors p-1 text-[11px] ml-1 focus:outline-none">
+                    <i class="fa-solid fa-question"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <input type="file" id="block-image-upload-input" class="hidden" accept="image/*" onchange="handleBlockImageUpload(event)">
+
+    <!-- MAIN CONTAINER -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+
+        <!-- Statistics Summary Widgets -->
+        <section class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-3.5 flex flex-col justify-between hover:border-slate-700 transition">
+                <div class="text-slate-400 text-xs font-medium flex justify-between items-center">
+                    <span>মোট আসন</span>
+                    <i class="fa-solid fa-chair text-slate-500"></i>
+                </div>
+                <div class="mt-2 flex items-baseline justify-between">
+                    <span id="stat-total-seats" class="text-2xl font-bold text-white">0</span>
+                    <span class="text-[10px] text-slate-400">সকল ব্লকে</span>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-3.5 flex flex-col justify-between hover:border-slate-700 transition">
+                <div class="text-slate-400 text-xs font-medium flex justify-between items-center">
+                    <span>বরাদ্দকৃত সিট</span>
+                    <i class="fa-solid fa-user-check text-emerald-400"></i>
+                </div>
+                <div class="mt-2 flex items-baseline justify-between">
+                    <span id="stat-occupied-seats" class="text-2xl font-bold text-emerald-400">0</span>
+                    <span id="stat-occupancy-percent" class="text-[10px] text-emerald-400/80 font-medium">0%</span>
+                </div>
+            </div>
+
+            <div class="bg-blue-950/80 border border-blue-900 rounded-xl p-3.5 flex flex-col justify-between hover:border-blue-700 transition">
+                <div class="text-blue-300 text-xs font-medium flex justify-between items-center">
+                    <span>ছাত্র শিবির</span>
+                    <i class="fa-solid fa-flag text-blue-400"></i>
+                </div>
+                <div class="mt-2 flex items-baseline justify-between">
+                    <span id="stat-shibir" class="text-2xl font-bold text-blue-300">0</span>
+                    <span class="text-[10px] text-blue-400/80 font-medium">ব্লু জোন</span>
+                </div>
+            </div>
+
+            <div class="bg-rose-950/40 border border-rose-900/60 rounded-xl p-3.5 flex flex-col justify-between hover:border-rose-700/80 transition">
+                <div class="text-rose-300 text-xs font-medium flex justify-between items-center">
+                    <span>ছাত্রদল / লীগ</span>
+                    <i class="fa-solid fa-flag text-rose-400"></i>
+                </div>
+                <div class="mt-2 flex items-baseline justify-between">
+                    <span id="stat-dal-league" class="text-2xl font-bold text-rose-300">0</span>
+                    <span class="text-[10px] text-rose-400/80 font-medium">রেড জোন</span>
+                </div>
+            </div>
+
+            <div class="bg-emerald-950/40 border border-emerald-900/60 rounded-xl p-3.5 flex flex-col justify-between hover:border-emerald-700/80 transition">
+                <div class="text-emerald-300 text-xs font-medium flex justify-between items-center">
+                    <span>NCP</span>
+                    <i class="fa-solid fa-flag text-emerald-400"></i>
+                </div>
+                <div class="mt-2 flex items-baseline justify-between">
+                    <span id="stat-ncp" class="text-2xl font-bold text-emerald-300">0</span>
+                    <span class="text-[10px] text-emerald-400/80 font-medium">গ্রিন জোন</span>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-3.5 flex flex-col justify-between hover:border-slate-700 transition">
+                <div class="text-slate-400 text-xs font-medium flex justify-between items-center">
+                    <span>সাধারণ শিক্ষার্থী</span>
+                    <i class="fa-solid fa-users text-slate-400"></i>
+                </div>
+                <div class="mt-2 flex items-baseline justify-between">
+                    <span id="stat-general" class="text-2xl font-bold text-slate-200">0</span>
+                    <span class="text-[10px] text-slate-400">সাধারণ</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Search Controls Toolbar -->
+        <section class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <input type="text" id="search-input" oninput="applyFilters()" placeholder="নাম, বিভাগ, রক্ত, জেলা বা সেশন খুঁজুন..." 
+                        class="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition">
+                </div>
+
+                <div>
+                    <select id="filter-block" onchange="applyFilters()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 transition">
+                        <option value="ALL">সকল ব্লক</option>
+                    </select>
+                </div>
+
+                <div>
+                    <select id="filter-politics" onchange="applyFilters()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 transition">
+                        <option value="ALL">সকল রাজনৈতিক পরিচয়</option>
+                        <option value="সাধারণ শিক্ষার্থী">সাধারণ শিক্ষার্থী</option>
+                        <option value="ছাত্র শিবির">ছাত্র শিবির</option>
+                        <option value="ছাত্র দল">ছাত্র দল</option>
+                        <option value="ছাত্র লীগ">ছাত্র লীগ</option>
+                        <option value="NCP">NCP</option>
+                        <option value="অন্যান্য">অন্যান্য</option>
+                    </select>
+                </div>
+
+                <div>
+                    <select id="filter-blood" onchange="applyFilters()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 transition">
+                        <option value="ALL">সকল রক্তের গ্রুপ</option>
+                        <option value="A+">A positive (A+)</option>
+                        <option value="A-">A negative (A-)</option>
+                        <option value="B+">B positive (B+)</option>
+                        <option value="B-">B negative (B-)</option>
+                        <option value="AB+">AB positive (AB+)</option>
+                        <option value="AB-">AB negative (AB-)</option>
+                        <option value="O+">O positive (O+)</option>
+                        <option value="O-">O negative (O-)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <select id="filter-status" onchange="applyFilters()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 transition">
+                        <option value="ALL">সকল অবস্থা (সব সিট)</option>
+                        <option value="FILLED">শুধুমাত্র বরাদ্দকৃত</option>
+                        <option value="VACANT">শুধুমাত্র খালি সিট</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- Block Cards Overview Grid -->
+        <section>
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-base font-semibold text-slate-200 flex items-center gap-2">
+                    <i class="fa-solid fa-cubes text-blue-400"></i> হলের সকল ব্লক
+                </h2>
+                <div class="flex items-center gap-2">
+                    <button onclick="addNewBlockGlobal()" class="admin-only px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-medium transition flex items-center gap-1.5 shadow-md">
+                        <i class="fa-solid fa-plus text-xs"></i> নতুন ব্লক যোগ করুন
+                    </button>
+                </div>
+            </div>
+
+            <div id="blocks-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"></div>
+        </section>
+
+        <!-- Search Results Table -->
+        <section id="search-results-section" class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl hidden">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                    <i class="fa-solid fa-list-check text-blue-400"></i> ফিল্টারকৃত শিক্ষার্থী তালিকা (<span id="search-count">0</span> জন)
+                </h3>
+                <button onclick="clearSearch()" class="text-xs text-slate-400 hover:text-slate-200 underline">ফিল্টার রিমুভ করুন</button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs text-slate-300 border-collapse">
+                    <thead class="bg-slate-950 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                        <tr>
+                            <th class="py-2.5 px-3">ব্লক/রুম/সিট</th>
+                            <th class="py-2.5 px-3">শিক্ষার্থীর নাম</th>
+                            <th class="py-2.5 px-3">রক্তের গ্রুপ</th>
+                            <th class="py-2.5 px-3">বিভাগ</th>
+                            <th class="py-2.5 px-3">সেশন</th>
+                            <th class="py-2.5 px-3">জেলা</th>
+                            <th class="py-2.5 px-3">রাজনৈতিক পরিচয়</th>
+                            <th class="py-2.5 px-3 text-right admin-only">অ্যাকশন</th>
+                        </tr>
+                    </thead>
+                    <tbody id="search-results-tbody" class="divide-y divide-slate-800/60"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- BLOCK CONFIGURATION MODAL -->
+    <div id="block-config-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
+            <div class="bg-slate-950 px-5 py-4 border-b border-slate-800 flex justify-between items-center">
+                <h4 id="block-config-title" class="text-sm font-bold text-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-blue-400"></i> ব্লক ও রুম কাস্টমাইজেশন
+                </h4>
+                <button onclick="closeBlockConfigModal()" class="text-slate-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="p-5 space-y-4 max-h-[75vh] overflow-y-auto">
+                <input type="hidden" id="config-block-id">
+
+                <div class="flex items-center justify-between gap-2">
+                    <div class="flex-1">
+                        <label class="block text-xs font-medium text-slate-300 mb-1">ব্লকের নাম (Block Title)</label>
+                        <input type="text" id="config-block-name" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500 transition">
+                    </div>
+                    <div class="pt-5">
+                        <button type="button" onclick="deleteCurrentConfigBlock()" class="px-3 py-2 bg-rose-950/80 hover:bg-rose-900 border border-rose-800 text-rose-300 rounded-lg text-xs font-medium transition flex items-center gap-1">
+                            <i class="fa-solid fa-trash-can"></i> ব্লক মুছুন
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">প্রোফাইল ছবির ইউআরএল (Image URL)</label>
+                    <input type="text" id="config-block-image" placeholder="https://..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-blue-500 transition">
+                </div>
+
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                        <label class="block text-xs font-medium text-slate-300">রুম তালিকা ও সিট সংখ্যা</label>
+                        <button type="button" onclick="addNewRoomToConfigBlock()" class="text-[11px] px-2.5 py-1 bg-blue-600/80 hover:bg-blue-600 text-white rounded-lg transition flex items-center gap-1">
+                            <i class="fa-solid fa-plus text-[10px]"></i> নতুন রুম যোগ করুন
+                        </button>
+                    </div>
+                    <div id="config-rooms-list" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
+                </div>
+            </div>
+
+            <div class="bg-slate-950 px-5 py-3 border-t border-slate-800 flex justify-end gap-2">
+                <button type="button" onclick="closeBlockConfigModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-medium transition">বাতিল</button>
+                <button type="button" onclick="saveBlockConfig()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-medium transition flex items-center gap-1.5 shadow-lg shadow-blue-600/30">
+                    <i class="fa-solid fa-floppy-disk"></i> পরিবর্তন সংরক্ষণ করুন
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ROOMS & SEATS VIEW MODAL -->
+    <div id="room-detail-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-40 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="bg-slate-950 px-6 py-4 border-b border-slate-800 flex justify-between items-center">
+                <div>
+                    <h3 id="modal-block-title" class="text-lg font-bold text-slate-100 flex items-center gap-2"></h3>
+                    <p id="modal-block-subtitle" class="text-xs text-slate-400 mt-0.5"></p>
+                </div>
+                <button onclick="closeRoomModal()" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="p-6 max-h-[75vh] overflow-y-auto">
+                <div id="modal-rooms-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+            </div>
+
+            <div class="bg-slate-950 px-6 py-3 border-t border-slate-800 flex justify-end">
+                <button onclick="closeRoomModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-xl transition">
+                    বন্ধ করুন
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- STUDENT ALLOCATION MODAL -->
+    <div id="student-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
+            <div class="bg-slate-950 px-5 py-4 border-b border-slate-800 flex justify-between items-center">
+                <h4 id="student-modal-title" class="text-sm font-bold text-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-user-pen text-blue-400"></i> শিক্ষার্থী প্রোফাইল আপডেট
+                </h4>
+                <button onclick="closeStudentModal()" class="text-slate-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="student-form" onsubmit="handleSaveStudent(event)" class="p-5 space-y-4 max-h-[78vh] overflow-y-auto">
+                <input type="hidden" id="input-block-id">
+                <input type="hidden" id="input-room-no">
+                <input type="hidden" id="input-seat-no">
+
+                <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-xs text-slate-300 flex justify-between items-center">
+                    <span>অবস্থান: <strong id="display-seat-location" class="text-blue-400">ব্লক এ - রুম ১০১ - সিট #১</strong></span>
+                    <span id="display-seat-status" class="px-2 py-0.5 rounded-full text-[10px] bg-slate-800">খালি</span>
+                </div>
+
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center gap-3">
+                    <div class="relative w-14 h-14 rounded-full bg-slate-800 border border-slate-700 overflow-hidden flex items-center justify-center shrink-0">
+                        <img id="preview-student-photo" src="" class="w-full h-full object-cover hidden">
+                        <i id="default-student-icon" class="fa-solid fa-user text-slate-500 text-xl"></i>
+                    </div>
+                    <div class="flex-1 space-y-1.5">
+                        <label class="block text-xs font-medium text-slate-300">শিক্ষার্থীর ছবি (Photo)</label>
+                        <input type="text" id="input-student-photo-url" placeholder="ইমেজ লিঙ্ক (URL)..." oninput="updateStudentPhotoPreview()" 
+                            class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-100 focus:outline-none focus:border-blue-500">
+                        
+                        <div class="flex items-center gap-2 pt-0.5">
+                            <label class="cursor-pointer px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg text-[10px] font-medium transition flex items-center gap-1">
+                                <i class="fa-solid fa-upload text-blue-400"></i> ডিভাইস থেকে আপলোড
+                                <input type="file" id="input-student-photo-file" accept="image/*" class="hidden" onchange="handleStudentPhotoFileUpload(event)">
+                            </label>
+                            <button type="button" onclick="removeStudentPhoto()" class="text-[10px] text-rose-400 hover:underline">ছবি মুছুন</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">শিক্ষার্থীর নাম (Student Name)</label>
+                    <input type="text" id="input-student-name" required placeholder="উদাহরণ: মাহফুজুর রহমান" 
+                        class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500 transition">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">বিভাগ (Department)</label>
+                        <input type="text" id="input-student-dept" placeholder="সিএসই / আইসিই" 
+                            class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">রক্তের গ্রুপ (Blood Group)</label>
+                        <select id="input-student-blood" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500 transition">
+                            <option value="">নির্ধারণ করুন</option>
+                            <option value="A+">A positive (A+)</option>
+                            <option value="A-">A negative (A-)</option>
+                            <option value="B+">B positive (B+)</option>
+                            <option value="B-">B negative (B-)</option>
+                            <option value="AB+">AB positive (AB+)</option>
+                            <option value="AB-">AB negative (AB-)</option>
+                            <option value="O+">O positive (O+)</option>
+                            <option value="O-">O negative (O-)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">সেশন (Session)</label>
+                        <input type="text" id="input-student-session" placeholder="২০২০-২১" 
+                            class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">জেলা (District)</label>
+                        <input type="text" id="input-student-district" placeholder="ঢাকা / রাজশাহী" 
+                            class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500 transition">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">মোবাইল নম্বর</label>
+                    <input type="text" id="input-student-phone" placeholder="017XXXXXXXX" 
+                        class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500 transition">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">রাজনৈতিক পরিচয় (Political Affiliation)</label>
+                    <select id="input-student-politics" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500">
+                        <option value="সাধারণ শিক্ষার্থী">সাধারণ শিক্ষার্থী</option>
+                        <option value="ছাত্র শিবির">ছাত্র শিবির</option>
+                        <option value="ছাত্র দল">ছাত্র দল</option>
+                        <option value="ছাত্র লীগ">ছাত্র লীগ</option>
+                        <option value="NCP">NCP</option>
+                        <option value="অন্যান্য">অন্যান্য</option>
+                    </select>
+                </div>
+
+                <div class="pt-3 flex gap-2">
+                    <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-medium py-2 px-4 rounded-xl text-xs transition shadow-lg shadow-blue-600/30 flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-floppy-disk"></i> সংরক্ষণ করুন
+                    </button>
+                    <button type="button" onclick="vacateCurrentSeat()" id="btn-vacate-seat" class="bg-rose-950/80 hover:bg-rose-900 border border-rose-800 text-rose-200 font-medium py-2 px-3 rounded-xl text-xs transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-user-minus"></i> সিট খালি করুন
+                    </button>
+                    <button type="button" onclick="closeStudentModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium py-2 px-3 rounded-xl text-xs transition">
+                        বাতিল
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- FETCH & JSON BACKUP INTEGRATION SCRIPT -->
+    <script>
+        window.hallData = [];
+        window.activeModalBlockId = null;
+        window.selectedBlockForImageUpload = null;
+        
+        // --- ADMIN SECURITY CONFIGURATION ---
+        const ADMIN_NAME = "Abdullah";
+        const ADMIN_PASSWORD = "1660";
+        window.isAdminAuthenticated = false;
+
+        window.toggleAdminAccess = function() {
+            if (window.isAdminAuthenticated) {
+                window.isAdminAuthenticated = false;
+                document.body.classList.remove('is-admin');
+                document.getElementById('secret-admin-btn').className = "bg-transparent text-slate-600 hover:text-slate-400 transition-colors p-1 text-[11px] ml-1 focus:outline-none";
+                document.getElementById('secret-admin-btn').innerHTML = `<i class="fa-solid fa-question"></i>`;
+                showToast("অ্যাডমিন মোড বন্ধ করা হয়েছে!", "info");
+                renderDashboard();
+            } else {
+                const inputName = prompt("Admin name");
+                if (inputName === null) return;
+                
+                const inputPass = prompt("Password");
+                if (inputPass === null) return;
+
+                if (inputName.trim() === ADMIN_NAME && inputPass.trim() === ADMIN_PASSWORD) {
+                    window.isAdminAuthenticated = true;
+                    document.body.classList.add('is-admin');
+                    document.getElementById('secret-admin-btn').className = "bg-transparent text-emerald-400 p-1 text-[11px] ml-1 focus:outline-none";
+                    document.getElementById('secret-admin-btn').innerHTML = `<i class="fa-solid fa-lock-open"></i>`;
+                    showToast("অ্যাডমিন অ্যাক্সেস সফল হয়েছে!", "success");
+                    renderDashboard();
+                } else {
+                    showToast("ভুল তথ্য দেওয়া হয়েছে!", "error");
+                }
+            }
+        };
+
+        const BLOCK_IDS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+        const ROOM_NUMBERS = ['১০১', '১০২', '১০৩', '১০৪', '১০৫', '১০৬', '১০৭', '২০১', '২০২', '২০৩', '২০৪', '২০৫', '২০৬', '২০৭'];
+        const DEFAULT_BLOCK_IMAGE = 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=600&q=80';
+
+        function generateDefaultHallData() {
+            return BLOCK_IDS.map(id => {
+                const rooms = ROOM_NUMBERS.map(rNo => {
+                    const is3SeatRoom = (rNo === '১০৫' || rNo === '২০৫');
+                    const totalSeatsInRoom = is3SeatRoom ? 3 : 4;
+                    const seats = [];
+
+                    for (let s = 1; s <= totalSeatsInRoom; s++) {
+                        seats.push({
+                            seatNo: s, name: '', dept: '', bloodGroup: '', session: '', district: '', phone: '', politics: '', photo: ''
+                        });
+                    }
+                    return { roomNo: rNo, seats: seats };
+                });
+
+                return {
+                    id: id,
+                    name: `ব্লক-${id} (${id} Block)`,
+                    image: DEFAULT_BLOCK_IMAGE,
+                    rooms: rooms
+                };
+            });
+        }
+
+        window.saveHallData = function() {
+            // লোকাল স্টোরেজে সেভ রাখা হচ্ছে যাতে ব্রাউজারে রিলোড দিলে ডাটা মুছে না যায়
+            localStorage.setItem('hallDataJSON', JSON.stringify(window.hallData));
+            renderDashboard();
+        };
+
+        // ডাটা লোড করার জন্য fetch() মেকানিজম (GitHub-এর hall-data.json ব্যাকআপ ফাইল থেকে রিড করার জন্য)
+        function loadHallDataFromJSON() {
+            fetch('hall-data.json')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    window.hallData = data;
+                    renderDashboard();
+                })
+                .catch(error => {
+                    console.warn('JSON file fetch failed, trying localStorage or default data:', error);
+                    const localData = localStorage.getItem('hallDataJSON');
+                    if (localData) {
+                        try {
+                            window.hallData = JSON.parse(localData);
+                        } catch (e) {
+                            window.hallData = generateDefaultHallData();
+                        }
+                    } else {
+                        window.hallData = generateDefaultHallData();
+                    }
+                    renderDashboard();
+                });
+        }
+
+        // পেজ লোড হওয়ার পর ডাটা ফেচ করা হবে
+        window.addEventListener('DOMContentLoaded', () => {
+            loadHallDataFromJSON();
+        });
+
+        window.renderDashboard = function() {
+            renderStats();
+            renderBlocks();
+            updateBlockFilterDropdown();
+            applyFilters();
+            if (window.activeModalBlockId) {
+                const block = window.hallData.find(b => b.id === window.activeModalBlockId);
+                if (block) renderModalRooms(block);
+            }
+        };
+
+        function renderStats() {
+            let totalSeats = 0, occupiedSeats = 0, shibirCount = 0, dalLeagueCount = 0, ncpCount = 0, generalCount = 0;
+
+            window.hallData.forEach(block => {
+                block.rooms?.forEach(room => {
+                    room.seats?.forEach(seat => {
+                        totalSeats++;
+                        if (seat.name && seat.name.trim() !== '') {
+                            occupiedSeats++;
+                            if (seat.politics === 'ছাত্র শিবির') shibirCount++;
+                            else if (seat.politics === 'ছাত্র দল' || seat.politics === 'ছাত্র লীগ') dalLeagueCount++;
+                            else if (seat.politics === 'NCP') ncpCount++;
+                            else if (seat.politics === 'সাধারণ শিক্ষার্থী') generalCount++;
+                        }
+                    });
+                });
+            });
+
+            document.getElementById('stat-total-seats').innerText = totalSeats;
+            document.getElementById('stat-occupied-seats').innerText = occupiedSeats;
+            const percent = totalSeats > 0 ? Math.round((occupiedSeats / totalSeats) * 100) : 0;
+            document.getElementById('stat-occupancy-percent').innerText = `${percent}% সিট পূর্ণ`;
+
+            document.getElementById('stat-shibir').innerText = shibirCount;
+            document.getElementById('stat-dal-league').innerText = dalLeagueCount;
+            document.getElementById('stat-ncp').innerText = ncpCount;
+            document.getElementById('stat-general').innerText = generalCount;
+        }
+
+        function renderBlocks() {
+            const container = document.getElementById('blocks-container');
+            container.innerHTML = '';
+
+            window.hallData.forEach(block => {
+                let blockTotal = 0, blockOccupied = 0, shibirInBlock = 0, dalLeagueInBlock = 0, ncpInBlock = 0, generalInBlock = 0, otherInBlock = 0;
+
+                block.rooms?.forEach(r => {
+                    r.seats?.forEach(s => {
+                        blockTotal++;
+                        if (s.name && s.name.trim() !== '') {
+                            blockOccupied++;
+                            if (s.politics === 'ছাত্র শিবির') shibirInBlock++;
+                            else if (s.politics === 'ছাত্র দল' || s.politics === 'ছাত্র লীগ') dalLeagueInBlock++;
+                            else if (s.politics === 'NCP') ncpInBlock++;
+                            else if (s.politics === 'সাধারণ শিক্ষার্থী') generalInBlock++;
+                            else otherInBlock++;
+                        }
+                    });
+                });
+
+                const fillPercentage = blockTotal > 0 ? Math.round((blockOccupied / blockTotal) * 100) : 0;
+                const blockImg = block.image || DEFAULT_BLOCK_IMAGE;
+
+                const shibirPct = blockTotal > 0 ? (shibirInBlock / blockTotal) * 100 : 0;
+                const dalLeaguePct = blockTotal > 0 ? (dalLeagueInBlock / blockTotal) * 100 : 0;
+                const ncpPct = blockTotal > 0 ? (ncpInBlock / blockTotal) * 100 : 0;
+                const generalPct = blockTotal > 0 ? (generalInBlock / blockTotal) * 100 : 0;
+                const otherPct = blockTotal > 0 ? (otherInBlock / blockTotal) * 100 : 0;
+
+                const blockCardHTML = `
+                    <div onclick="openRoomModal('${block.id}')" 
+                         class="bg-slate-900 border border-slate-800 hover:border-blue-500/80 rounded-2xl overflow-hidden shadow-lg hover:shadow-blue-900/20 transition-all duration-200 cursor-pointer group flex flex-col justify-between">
+                        
+                        <div class="relative h-36 bg-slate-950 overflow-hidden">
+                            <img src="${blockImg}" alt="${block.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 opacity-80 group-hover:opacity-100">
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent"></div>
+                            
+                            <button onclick="event.stopPropagation(); openBlockConfigModal('${block.id}')" title="কাস্টমাইজ করুন" class="admin-only absolute top-2.5 left-2.5 bg-slate-900/80 hover:bg-slate-800 text-slate-200 p-2 rounded-lg text-xs backdrop-blur-md border border-slate-700/80 transition">
+                                <i class="fa-solid fa-gear"></i>
+                            </button>
+
+                            <button onclick="event.stopPropagation(); triggerBlockImageUpload('${block.id}')" title="ছবি পিক করুন" class="admin-only absolute top-2.5 right-2.5 bg-slate-900/80 hover:bg-blue-600 text-slate-200 p-2 rounded-lg text-xs backdrop-blur-md border border-slate-700/80 transition">
+                                <i class="fa-solid fa-camera"></i>
+                            </button>
+
+                            <div class="absolute bottom-2.5 left-3.5 right-3.5 flex justify-between items-end">
+                                <h3 class="text-base font-bold text-white flex items-center gap-1.5 drop-shadow">
+                                    <i class="fa-solid fa-building text-blue-400"></i> ${block.name}
+                                </h3>
+                                <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-900/90 text-blue-300 border border-blue-500/40">
+                                    ${block.rooms ? block.rooms.length : 0}টি রুম
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="p-4 space-y-3 flex-1 flex flex-col justify-between">
+                            <div class="space-y-2">
+                                <div class="flex justify-between text-xs text-slate-400">
+                                    <span>মোট রুম: <strong>${block.rooms ? block.rooms.length : 0}টি</strong></span>
+                                    <span>মোট সিট: <strong>${blockTotal}টি</strong></span>
+                                </div>
+
+                                <div class="space-y-1">
+                                    <div class="flex justify-between text-[11px] font-medium text-slate-400">
+                                        <span>সিট ফিলআপ</span>
+                                        <span class="text-slate-200 font-semibold">${blockOccupied} / ${blockTotal} (${fillPercentage}%)</span>
+                                    </div>
+                                    <div class="w-full bg-slate-950 h-3 rounded-full overflow-hidden border border-slate-800 flex p-0.5 gap-0.5 shadow-inner">
+                                        ${shibirPct > 0 ? `<div class="bg-blue-600 h-full rounded-xs transition-all duration-300" style="width: ${shibirPct}%"></div>` : ''}
+                                        ${dalLeaguePct > 0 ? `<div class="bg-rose-500 h-full rounded-xs transition-all duration-300" style="width: ${dalLeaguePct}%"></div>` : ''}
+                                        ${ncpPct > 0 ? `<div class="bg-emerald-500 h-full rounded-xs transition-all duration-300" style="width: ${ncpPct}%"></div>` : ''}
+                                        ${generalPct > 0 ? `<div class="bg-slate-400 h-full rounded-xs transition-all duration-300" style="width: ${generalPct}%"></div>` : ''}
+                                        ${otherPct > 0 ? `<div class="bg-purple-500 h-full rounded-xs transition-all duration-300" style="width: ${otherPct}%"></div>` : ''}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-wrap gap-1.5 text-[10px] pt-1">
+                                ${shibirInBlock > 0 ? `<span class="px-2 py-0.5 rounded bg-blue-950 text-blue-300 border border-blue-800 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>শিবির: ${shibirInBlock}</span>` : ''}
+                                ${dalLeagueInBlock > 0 ? `<span class="px-2 py-0.5 rounded bg-rose-950/80 text-rose-300 border border-rose-800 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>দল/লীগ: ${dalLeagueInBlock}</span>` : ''}
+                                ${ncpInBlock > 0 ? `<span class="px-2 py-0.5 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-800 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>NCP: ${ncpInBlock}</span>` : ''}
+                                ${generalInBlock > 0 ? `<span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>সাধারণ: ${generalInBlock}</span>` : ''}
+                                ${blockOccupied === 0 ? `<span class="text-slate-500 text-[11px]">সকল সিট খালি রয়েছে</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += blockCardHTML;
+            });
+        }
+
+        function updateBlockFilterDropdown() {
+            const select = document.getElementById('filter-block');
+            if (!select) return;
+            const currentVal = select.value;
+            select.innerHTML = '<option value="ALL">সকল ব্লক</option>';
+            window.hallData.forEach(b => {
+                select.innerHTML += `<option value="${b.id}">${b.name}</option>`;
+            });
+            select.value = currentVal || 'ALL';
+        }
+
+        window.openRoomModal = function(blockId) {
+            window.activeModalBlockId = blockId;
+            const block = window.hallData.find(b => b.id === blockId);
+            if (!block) return;
+
+            document.getElementById('modal-block-title').innerHTML = `<i class="fa-solid fa-door-open text-blue-500"></i> ${block.name}`;
+            document.getElementById('modal-block-subtitle').innerText = `মোট রুম: ${block.rooms ? block.rooms.length : 0}টি — বিস্তারিত দেখতে ক্লিক করুন`;
+            
+            renderModalRooms(block);
+            document.getElementById('room-detail-modal').classList.remove('hidden');
+        };
+
+        window.closeRoomModal = function() {
+            document.getElementById('room-detail-modal').classList.add('hidden');
+            window.activeModalBlockId = null;
+        };
+
+        function renderModalRooms(block) {
+            const grid = document.getElementById('modal-rooms-grid');
+            grid.innerHTML = '';
+
+            block.rooms?.forEach((room) => {
+                let seatsHtml = '';
+
+                room.seats?.forEach((seat) => {
+                    const isFilled = seat.name && seat.name.trim() !== '';
+
+                    let seatCardStyle = isFilled ? 'bg-slate-900 border-slate-700/60' : 'bg-slate-900/60 border-slate-800/80';
+                    let badgeColor = 'bg-slate-800 text-slate-300 border-slate-700';
+                    let studentNameColor = 'text-slate-100';
+
+                    if (isFilled && seat.politics) {
+                        if (seat.politics === 'ছাত্র শিবির') {
+                            seatCardStyle = 'bg-blue-950/90 border-blue-600 shadow-lg shadow-blue-950/80 text-blue-100';
+                            badgeColor = 'bg-blue-900/90 text-blue-200 border-blue-500';
+                            studentNameColor = 'text-blue-200 font-bold';
+                        } else if (seat.politics === 'ছাত্র দল' || seat.politics === 'ছাত্র লীগ') {
+                            seatCardStyle = 'bg-rose-950/90 border-rose-500/90 shadow-lg shadow-rose-950/50 text-rose-100';
+                            badgeColor = 'bg-rose-900/90 text-rose-200 border-rose-600';
+                            studentNameColor = 'text-rose-200 font-bold';
+                        } else if (seat.politics === 'NCP') {
+                            seatCardStyle = 'bg-emerald-950/90 border-emerald-500/90 shadow-lg shadow-emerald-950/50 text-emerald-100';
+                            badgeColor = 'bg-emerald-900/90 text-emerald-200 border-emerald-600';
+                            studentNameColor = 'text-emerald-200 font-bold';
+                        } else if (seat.politics === 'সাধারণ শিক্ষার্থী') {
+                            badgeColor = 'bg-slate-800 text-slate-300 border-slate-700';
+                            studentNameColor = 'text-slate-100 font-bold';
+                        } else if (seat.politics === 'অন্যান্য') {
+                            badgeColor = 'bg-purple-950/80 text-purple-300 border-purple-800';
+                        }
+                    }
+
+                    let politicsBadge = '';
+                    if (isFilled && seat.politics) {
+                        politicsBadge = `<span class="inline-block mt-1.5 text-[10px] px-2 py-0.5 rounded-md border font-medium ${badgeColor}">
+                            <i class="fa-solid fa-flag text-[9px] mr-1"></i>${seat.politics}
+                        </span>`;
+                    }
+
+                    const studentPhotoHTML = (isFilled && seat.photo)
+                        ? `<img src="${seat.photo}" class="w-8 h-8 rounded-full object-cover border border-slate-600 shrink-0">`
+                        : `<div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0 text-slate-400 text-xs"><i class="fa-solid fa-user"></i></div>`;
+
+                    const bloodGroupBadge = seat.bloodGroup 
+                        ? `<span class="text-[10px] px-2 py-0.5 bg-transparent border border-rose-500 text-rose-400 rounded font-bold tracking-wide">${seat.bloodGroup}</span>` 
+                        : '';
+
+                    const seatClickAction = window.isAdminAuthenticated ? `onclick="openStudentModal('${block.id}', '${room.roomNo}', ${seat.seatNo})"` : '';
+
+                    seatsHtml += `
+                        <div ${seatClickAction} 
+                             class="p-3 rounded-xl border ${seatCardStyle} flex flex-col justify-between space-y-2 ${window.isAdminAuthenticated ? 'cursor-pointer hover:scale-[1.02]' : ''} transition-all shadow-md">
+                            
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold text-slate-300">সিট #${seat.seatNo}</span>
+                                <span class="text-[10px] px-2 py-0.5 rounded-full font-semibold ${isFilled ? 'bg-black/40 text-slate-200 border border-slate-600/50' : 'bg-slate-800 text-slate-400'}">
+                                    ${isFilled ? 'বরাদ্দকৃত' : 'খালি সিট'}
+                                </span>
+                            </div>
+
+                            ${isFilled ? `
+                                <div>
+                                    <div class="flex items-center justify-between gap-2">
+                                        <div class="flex items-center gap-2 overflow-hidden">
+                                            ${studentPhotoHTML}
+                                            <span class="text-sm ${studentNameColor} truncate">${seat.name}</span>
+                                        </div>
+                                        ${bloodGroupBadge}
+                                    </div>
+                                    <div class="text-xs text-slate-300/90 mt-2 space-y-0.5">
+                                        <div><span class="opacity-75">বিভাগ:</span> ${seat.dept || '-'}</div>
+                                        <div class="flex justify-between">
+                                            <span><span class="opacity-75">সেশন:</span> ${seat.session || '-'}</span>
+                                            <span><span class="opacity-75">জেলা:</span> ${seat.district || '-'}</span>
+                                        </div>
+                                        ${politicsBadge}
+                                    </div>
+                                </div>
+                            ` : `
+                                <div class="text-xs text-slate-500 italic py-2 text-center flex items-center justify-center gap-1">
+                                    ${window.isAdminAuthenticated ? '<i class="fa-solid fa-pen text-blue-400"></i> এডিট করুন' : 'খালি সিট'}
+                                </div>
+                            `}
+                        </div>
+                    `;
+                });
+
+                const roomCard = `
+                    <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-4 space-y-3">
+                        <div class="flex justify-between items-center pb-2 border-b border-slate-800">
+                            <h4 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+                                <i class="fa-solid fa-door-closed text-slate-400"></i> রুম নম্বর: ${room.roomNo}
+                                ${(room.roomNo === '১০৫' || room.roomNo === '২০৫') ? '<span class="text-[10px] px-2 py-0.2 bg-amber-950 text-amber-300 border border-amber-800 rounded-full">৩ সিটের রুম</span>' : ''}
+                            </h4>
+                            <span class="text-[10px] text-slate-400">সিট সংখ্যা: ${room.seats ? room.seats.length : 0}টি</span>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            ${seatsHtml}
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += roomCard;
+            });
+        }
+
+        window.updateStudentPhotoPreview = function() {
+            const url = document.getElementById('input-student-photo-url').value.trim();
+            const img = document.getElementById('preview-student-photo');
+            const icon = document.getElementById('default-student-icon');
+
+            if (url) {
+                img.src = url;
+                img.classList.remove('hidden');
+                icon.classList.add('hidden');
+            } else {
+                img.src = '';
+                img.classList.add('hidden');
+                icon.classList.remove('hidden');
+            }
+        };
+
+        window.handleStudentPhotoFileUpload = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('input-student-photo-url').value = e.target.result;
+                updateStudentPhotoPreview();
+            };
+            reader.readAsDataURL(file);
+        };
+
+        window.removeStudentPhoto = function() {
+            document.getElementById('input-student-photo-url').value = '';
+            document.getElementById('input-student-photo-file').value = '';
+            updateStudentPhotoPreview();
+        };
+
+        window.openStudentModal = function(blockId, roomNo, seatNo) {
+            if (!window.isAdminAuthenticated) return;
+            const block = window.hallData.find(b => b.id === blockId);
+            if (!block) return;
+            const room = block.rooms.find(r => r.roomNo === roomNo);
+            if (!room) return;
+            const seat = room.seats.find(s => s.seatNo === seatNo);
+            if (!seat) return;
+
+            document.getElementById('input-block-id').value = blockId;
+            document.getElementById('input-room-no').value = roomNo;
+            document.getElementById('input-seat-no').value = seatNo;
+
+            document.getElementById('display-seat-location').innerText = `${block.name} - রুম ${roomNo} - সিট #${seatNo}`;
+            
+            const isFilled = seat.name && seat.name.trim() !== '';
+            document.getElementById('display-seat-status').innerText = isFilled ? 'বরাদ্দকৃত' : 'খালি সিট';
+            document.getElementById('display-seat-status').className = isFilled 
+                ? 'px-2 py-0.5 rounded-full text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-800'
+                : 'px-2 py-0.5 rounded-full text-[10px] bg-slate-800 text-slate-400';
+
+            document.getElementById('input-student-name').value = seat.name || '';
+            document.getElementById('input-student-dept').value = seat.dept || '';
+            document.getElementById('input-student-blood').value = seat.bloodGroup || '';
+            document.getElementById('input-student-session').value = seat.session || '';
+            document.getElementById('input-student-district').value = seat.district || '';
+            document.getElementById('input-student-phone').value = seat.phone || '';
+            document.getElementById('input-student-politics').value = seat.politics || 'সাধারণ শিক্ষার্থী';
+            document.getElementById('input-student-photo-url').value = seat.photo || '';
+            
+            updateStudentPhotoPreview();
+
+            document.getElementById('btn-vacate-seat').style.display = isFilled ? 'inline-flex' : 'none';
+            document.getElementById('student-modal').classList.remove('hidden');
+        };
+
+        window.closeStudentModal = function() {
+            document.getElementById('student-modal').classList.add('hidden');
+        };
+
+        window.handleSaveStudent = function(event) {
+            event.preventDefault();
+
+            const blockId = document.getElementById('input-block-id').value;
+            const roomNo = document.getElementById('input-room-no').value;
+            const seatNo = parseInt(document.getElementById('input-seat-no').value);
+
+            const block = window.hallData.find(b => b.id === blockId);
+            if (!block) return;
+            const room = block.rooms.find(r => r.roomNo === roomNo);
+            if (!room) return;
+            const seat = room.seats.find(s => s.seatNo === seatNo);
+            if (!seat) return;
+
+            seat.name = document.getElementById('input-student-name').value.trim();
+            seat.dept = document.getElementById('input-student-dept').value.trim();
+            seat.bloodGroup = document.getElementById('input-student-blood').value;
+            seat.session = document.getElementById('input-student-session').value.trim();
+            seat.district = document.getElementById('input-student-district').value.trim();
+            seat.phone = document.getElementById('input-student-phone').value.trim();
+            seat.politics = document.getElementById('input-student-politics').value;
+            seat.photo = document.getElementById('input-student-photo-url').value.trim();
+
+            saveHallData();
+            closeStudentModal();
+            showToast('সফলভাবে সেভ হয়েছে!', 'success');
+        };
+
+        window.vacateCurrentSeat = function() {
+            const blockId = document.getElementById('input-block-id').value;
+            const roomNo = document.getElementById('input-room-no').value;
+            const seatNo = parseInt(document.getElementById('input-seat-no').value);
+
+            const block = window.hallData.find(b => b.id === blockId);
+            if (!block) return;
+            const room = block.rooms.find(r => r.roomNo === roomNo);
+            if (!room) return;
+            const seat = room.seats.find(s => s.seatNo === seatNo);
+            if (!seat) return;
+
+            seat.name = '';
+            seat.dept = '';
+            seat.bloodGroup = '';
+            seat.session = '';
+            seat.district = '';
+            seat.phone = '';
+            seat.politics = '';
+            seat.photo = '';
+
+            saveHallData();
+            closeStudentModal();
+            showToast('আসনটি সফলভাবে খালি করা হয়েছে!', 'info');
+        };
+
+        window.applyFilters = function() {
+            if (!window.hallData || window.hallData.length === 0) return;
+
+            const queryInput = document.getElementById('search-input');
+            const blockInput = document.getElementById('filter-block');
+            const politicsInput = document.getElementById('filter-politics');
+            const bloodInput = document.getElementById('filter-blood');
+            const statusInput = document.getElementById('filter-status');
+
+            if (!queryInput || !blockInput || !politicsInput || !bloodInput || !statusInput) return;
+
+            const query = queryInput.value.toLowerCase().trim();
+            const blockFilter = blockInput.value;
+            const politicsFilter = politicsInput.value;
+            const bloodFilter = bloodInput.value;
+            const statusFilter = statusInput.value;
+
+            const resultsSection = document.getElementById('search-results-section');
+            const tbody = document.getElementById('search-results-tbody');
+            
+            const isActiveFilter = query !== '' || blockFilter !== 'ALL' || politicsFilter !== 'ALL' || bloodFilter !== 'ALL' || statusFilter !== 'ALL';
+
+            if (!isActiveFilter) {
+                resultsSection.classList.add('hidden');
+                return;
+            }
+
+            resultsSection.classList.remove('hidden');
+            tbody.innerHTML = '';
+
+            let matchCount = 0;
+
+            window.hallData.forEach(block => {
+                if (blockFilter !== 'ALL' && block.id !== blockFilter) return;
+
+                block.rooms?.forEach(room => {
+                    room.seats?.forEach(seat => {
+                        const isFilled = seat.name && seat.name.trim() !== '';
+
+                        if (statusFilter === 'FILLED' && !isFilled) return;
+                        if (statusFilter === 'VACANT' && isFilled) return;
+
+                        if (politicsFilter !== 'ALL') {
+                            if (!isFilled || seat.politics !== politicsFilter) return;
+                        }
+
+                        if (bloodFilter !== 'ALL') {
+                            if (!isFilled || seat.bloodGroup !== bloodFilter) return;
+                        }
+
+                        if (query !== '') {
+                            const nameMatch = (seat.name || '').toLowerCase().includes(query);
+                            const deptMatch = (seat.dept || '').toLowerCase().includes(query);
+                            const bloodMatch = (seat.bloodGroup || '').toLowerCase().includes(query);
+                            const districtMatch = (seat.district || '').toLowerCase().includes(query);
+                            const sessionMatch = (seat.session || '').toLowerCase().includes(query);
+                            const roomMatch = room.roomNo.toLowerCase().includes(query);
+
+                            if (!nameMatch && !deptMatch && !bloodMatch && !districtMatch && !sessionMatch && !roomMatch) return;
+                        }
+
+                        matchCount++;
+
+                        let badgeColor = 'bg-slate-800 text-slate-300 border-slate-700';
+                        if (seat.politics === 'ছাত্র শিবির') badgeColor = 'bg-blue-950 text-blue-300 border-blue-800';
+                        else if (seat.politics === 'ছাত্র দল' || seat.politics === 'ছাত্র লীগ') badgeColor = 'bg-rose-950 text-rose-300 border-rose-800';
+                        else if (seat.politics === 'NCP') badgeColor = 'bg-emerald-950 text-emerald-300 border-emerald-800';
+
+                        const bloodDisplay = seat.bloodGroup 
+                            ? `<span class="text-xs font-bold text-rose-400 border border-rose-500/80 px-1.5 py-0.5 rounded">${seat.bloodGroup}</span>` 
+                            : '-';
+
+                        const actionBtn = window.isAdminAuthenticated ? `
+                            <td class="py-2.5 px-3 text-right admin-only">
+                                <button onclick="openStudentModal('${block.id}', '${room.roomNo}', ${seat.seatNo})" 
+                                        class="px-2.5 py-1 bg-blue-600/80 hover:bg-blue-600 text-white rounded-lg text-[11px] transition">
+                                    ${isFilled ? 'সম্পাদনা' : 'বরাদ্দ দিন'}
+                                </button>
+                            </td>` : '';
+
+                        const tr = document.createElement('tr');
+                        tr.className = 'hover:bg-slate-800/40 transition';
+                        tr.innerHTML = `
+                            <td class="py-2.5 px-3 font-semibold text-slate-200">
+                                ${block.name} - রুম ${room.roomNo} (সিট #${seat.seatNo})
+                            </td>
+                            <td class="py-2.5 px-3 flex items-center gap-2">
+                                ${seat.photo ? `<img src="${seat.photo}" class="w-6 h-6 rounded-full object-cover border border-slate-600">` : ''}
+                                <span>${isFilled ? seat.name : '<span class="text-slate-500 italic">খালি</span>'}</span>
+                            </td>
+                            <td class="py-2.5 px-3">${bloodDisplay}</td>
+                            <td class="py-2.5 px-3">${seat.dept || '-'}</td>
+                            <td class="py-2.5 px-3">${seat.session || '-'}</td>
+                            <td class="py-2.5 px-3">${seat.district || '-'}</td>
+                            <td class="py-2.5 px-3">
+                                ${isFilled ? `<span class="px-2 py-0.5 rounded border text-[10px] font-medium ${badgeColor}">${seat.politics || 'সাধারণ শিক্ষার্থী'}</span>` : '-'}
+                            </td>
+                            ${actionBtn}
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                });
+            });
+
+            document.getElementById('search-count').innerText = matchCount;
+            if (matchCount === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="py-4 text-center text-slate-500 italic">কোনো শিক্ষার্থী বা তথ্য পাওয়া যায়নি</td></tr>`;
+            }
+        };
+
+        window.clearSearch = function() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('filter-block').value = 'ALL';
+            document.getElementById('filter-politics').value = 'ALL';
+            document.getElementById('filter-blood').value = 'ALL';
+            document.getElementById('filter-status').value = 'ALL';
+            applyFilters();
+        };
+
+        window.openBlockConfigModal = function(blockId) {
+            if (!window.isAdminAuthenticated) return;
+            const block = window.hallData.find(b => b.id === blockId);
+            if (!block) return;
+
+            document.getElementById('config-block-id').value = block.id;
+            document.getElementById('config-block-name').value = block.name;
+            document.getElementById('config-block-image').value = block.image || '';
+
+            renderConfigRoomsList(block);
+            document.getElementById('block-config-modal').classList.remove('hidden');
+        };
+
+        window.closeBlockConfigModal = function() {
+            document.getElementById('block-config-modal').classList.add('hidden');
+        };
+
+        window.deleteCurrentConfigBlock = function() {
+            const blockId = document.getElementById('config-block-id').value;
+            const index = window.hallData.findIndex(b => b.id === blockId);
+            if (index === -1) return;
+
+            if (window.hallData.length <= 1) {
+                showToast('অন্তত একটি ব্লক থাকতে হবে!', 'error');
+                return;
+            }
+
+            const removedName = window.hallData[index].name;
+            window.hallData.splice(index, 1);
+            saveHallData();
+            closeBlockConfigModal();
+            showToast(`${removedName} মুছে ফেলা হয়েছে!`, 'info');
+        };
+
+        function renderConfigRoomsList(block) {
+            const listContainer = document.getElementById('config-rooms-list');
+            listContainer.innerHTML = '';
+
+            block.rooms?.forEach((room, index) => {
+                const row = document.createElement('div');
+                row.className = 'flex items-center gap-2 bg-slate-950 p-2 rounded-xl border border-slate-800';
+                row.innerHTML = `
+                    <div class="flex-1">
+                        <label class="text-[10px] text-slate-500 block">রুম নম্বর</label>
+                        <input type="text" value="${room.roomNo}" data-index="${index}" class="config-room-no bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white w-full">
+                    </div>
+                    <div class="w-24">
+                        <label class="text-[10px] text-slate-500 block">সিট সংখ্যা</label>
+                        <input type="number" min="1" max="10" value="${room.seats ? room.seats.length : 4}" data-index="${index}" class="config-room-seats bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white w-full">
+                    </div>
+                    <button type="button" onclick="deleteRoomFromConfigBlock(${index})" class="mt-3 p-1.5 text-rose-400 hover:text-rose-300 hover:bg-rose-950/60 rounded-lg transition">
+                        <i class="fa-solid fa-trash-can text-xs"></i>
+                    </button>
+                `;
+                listContainer.appendChild(row);
+            });
+        }
+
+        window.addNewRoomToConfigBlock = function() {
+            const blockId = document.getElementById('config-block-id').value;
+            const block = window.hallData.find(b => b.id === blockId);
+            if (!block) return;
+
+            if (!block.rooms) block.rooms = [];
+            const newRoomNo = `রুম-${block.rooms.length + 101}`;
+            block.rooms.push({
+                roomNo: newRoomNo,
+                seats: [
+                    { seatNo: 1, name: '', dept: '', bloodGroup: '', session: '', district: '', phone: '', politics: '', photo: '' },
+                    { seatNo: 2, name: '', dept: '', bloodGroup: '', session: '', district: '', phone: '', politics: '', photo: '' },
+                    { seatNo: 3, name: '', dept: '', bloodGroup: '', session: '', district: '', phone: '', politics: '', photo: '' },
+                    { seatNo: 4, name: '', dept: '', bloodGroup: '', session: '', district: '', phone: '', politics: '', photo: '' }
+                ]
+            });
+            renderConfigRoomsList(block);
+        };
+
+        window.deleteRoomFromConfigBlock = function(index) {
+            const blockId = document.getElementById('config-block-id').value;
+            const block = window.hallData.find(b => b.id === blockId);
+            if (!block || block.rooms.length <= 1) {
+                showToast('অন্তত একটি রুম থাকতে হবে!', 'error');
+                return;
+            }
+            block.rooms.splice(index, 1);
+            renderConfigRoomsList(block);
+        };
+
+        window.saveBlockConfig = function() {
+            const blockId = document.getElementById('config-block-id').value;
+            const block = window.hallData.find(b => b.id === blockId);
+            if (!block) return;
+
+            block.name = document.getElementById('config-block-name').value.trim() || block.name;
+            block.image = document.getElementById('config-block-image').value.trim() || DEFAULT_BLOCK_IMAGE;
+
+            const roomNoInputs = document.querySelectorAll('.config-room-no');
+            const seatInputs = document.querySelectorAll('.config-room-seats');
+
+            roomNoInputs.forEach((input, idx) => {
+                if (block.rooms[idx]) {
+                    block.rooms[idx].roomNo = input.value.trim() || `রুম ${idx + 101}`;
+                    const targetSeatCount = parseInt(seatInputs[idx].value) || 4;
+                    const currentSeats = block.rooms[idx].seats || [];
+
+                    if (targetSeatCount > currentSeats.length) {
+                        for (let s = currentSeats.length + 1; s <= targetSeatCount; s++) {
+                            currentSeats.push({ seatNo: s, name: '', dept: '', bloodGroup: '', session: '', district: '', phone: '', politics: '', photo: '' });
+                        }
+                    } else if (targetSeatCount < currentSeats.length) {
+                        block.rooms[idx].seats = currentSeats.slice(0, targetSeatCount);
+                    }
+                }
+            });
+
+            saveHallData();
+            closeBlockConfigModal();
+            showToast(`${block.name}-এর কনফিগারেশন আপডেট করা হয়েছে!`, 'success');
+        };
+
+        window.addNewBlockGlobal = function() {
+            if (!window.isAdminAuthenticated) return;
+            const newId = `BLK_${Date.now().toString().slice(-4)}`;
+            const newBlockName = `ব্লক-${window.hallData.length + 1} (Block ${window.hallData.length + 1})`;
+            
+            const rooms = ROOM_NUMBERS.map(rNo => ({
+                roomNo: rNo,
+                seats: Array.from({ length: 4 }, (_, i) => ({
+                    seatNo: i + 1, name: '', dept: '', bloodGroup: '', session: '', district: '', phone: '', politics: '', photo: ''
+                }))
+            }));
+
+            window.hallData.push({ id: newId, name: newBlockName, image: DEFAULT_BLOCK_IMAGE, rooms: rooms });
+
+            saveHallData();
+            showToast(`${newBlockName} সফলভাবে যুক্ত করা হয়েছে!`, 'success');
+        };
+
+        window.triggerBlockImageUpload = function(blockId) {
+            if (!window.isAdminAuthenticated) return;
+            window.selectedBlockForImageUpload = blockId;
+            document.getElementById('block-image-upload-input').click();
+        };
+
+        window.handleBlockImageUpload = function(event) {
+            const file = event.target.files[0];
+            if (!file || !window.selectedBlockForImageUpload) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const block = window.hallData.find(b => b.id === window.selectedBlockForImageUpload);
+                if (block) {
+                    block.image = e.target.result;
+                    saveHallData();
+                    showToast(`${block.name}-এর প্রোফাইল ছবি পরিবর্তন করা হয়েছে!`, 'success');
+                }
+                window.selectedBlockForImageUpload = null;
+            };
+            reader.readAsDataURL(file);
+        };
+
+        window.exportData = function() {
+            if (!window.isAdminAuthenticated) return;
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(window.hallData, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `hall-data.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            showToast('ব্যাকআপ ফাইল (hall-data.json) ডাউনলোড হয়েছে!', 'success');
+        };
+
+        window.triggerImport = function() {
+            if (!window.isAdminAuthenticated) return;
+            document.getElementById('import-file-input').click();
+        };
+
+        window.importData = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (Array.isArray(importedData)) {
+                        window.hallData = importedData;
+                        saveHallData();
+                        showToast('ডাটা সফলভাবে ইমপোর্ট করা হয়েছে!', 'success');
+                    } else {
+                        showToast('ভুল ফাইলের ফরম্যাট!', 'error');
+                    }
+                } catch (err) {
+                    showToast('ফাইল পড়তে ব্যর্থ হয়েছে!', 'error');
+                }
+            };
+            reader.readAsText(file);
+        };
+
+        window.resetDataToDefault = function() {
+            if (!window.isAdminAuthenticated) return;
+            window.hallData = generateDefaultHallData();
+            saveHallData();
+            showToast('ডাটা রিসেট সম্পন্ন হয়েছে!', 'info');
+        };
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            
+            let bg = 'bg-slate-900 border-slate-700 text-slate-100';
+            if (type === 'success') bg = 'bg-emerald-950 border-emerald-600 text-emerald-200';
+            if (type === 'error') bg = 'bg-rose-950 border-rose-600 text-rose-200';
+            if (type === 'info') bg = 'bg-blue-950 border-blue-600 text-blue-200';
+
+            toast.className = `px-4 py-3 rounded-xl border ${bg} shadow-xl text-xs font-medium flex items-center gap-2 pointer-events-auto transform transition-all duration-300 translate-y-2 opacity-0`;
+            toast.innerHTML = `<i class="fa-solid fa-circle-info text-sm"></i> <span>${message}</span>`;
+
+            container.appendChild(toast);
+
+            setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
