@@ -4695,5 +4695,698 @@
         ]
       }
     ]
+  },
+  {
+    "id": "BLK_6425",
+    "name": "ব্লক-A (Block A)",
+    "image": "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=600&q=80",
+    "rooms": [
+      {
+        "roomNo": "১০১",
+        "seats": [
+          {
+            "seatNo": 1,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 2,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 3,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 4,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          }
+        ]
+      },
+      {
+        "roomNo": "১০২",
+        "seats": [
+          {
+            "seatNo": 1,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 2,
+            "name": "Abdullah",
+            "dept": "",
+            "bloodGroup": "A+",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "ছাত্র লীগ",
+            "photo": ""
+          },
+          {
+            "seatNo": 3,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 4,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          }
+        ]
+      },
+      {
+        "roomNo": "১০৩",
+        "seats": [
+          {
+            "seatNo": 1,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 2,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 3,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 4,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          }
+        ]
+      },
+      {
+        "roomNo": "১০৪",
+        "seats": [
+          {
+            "seatNo": 1,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 2,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 3,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 4,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          }
+        ]
+      },
+      {
+        "roomNo": "১০৫",
+        "seats": [
+          {
+            "seatNo": 1,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 2,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 3,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 4,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          }
+        ]
+      },
+      {
+        "roomNo": "১০৬",
+        "seats": [
+          {
+            "seatNo": 1,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 2,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 3,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 4,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          }
+        ]
+      },
+      {
+        "roomNo": "১০৭",
+        "seats": [
+          {
+            "seatNo": 1,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 2,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 3,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 4,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          }
+        ]
+      },
+      {
+        "roomNo": "২০১",
+        "seats": [
+          {
+            "seatNo": 1,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 2,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 3,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 4,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          }
+        ]
+      },
+      {
+        "roomNo": "২০২",
+        "seats": [
+          {
+            "seatNo": 1,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 2,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 3,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 4,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          }
+        ]
+      },
+      {
+        "roomNo": "২০৩",
+        "seats": [
+          {
+            "seatNo": 1,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 2,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 3,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 4,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          }
+        ]
+      },
+      {
+        "roomNo": "২০৪",
+        "seats": [
+          {
+            "seatNo": 1,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 2,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 3,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 4,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          }
+        ]
+      },
+      {
+        "roomNo": "২০৫",
+        "seats": [
+          {
+            "seatNo": 1,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 2,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 3,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 4,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          }
+        ]
+      },
+      {
+        "roomNo": "২০৬",
+        "seats": [
+          {
+            "seatNo": 1,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 2,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 3,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 4,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          }
+        ]
+      },
+      {
+        "roomNo": "২০৭",
+        "seats": [
+          {
+            "seatNo": 1,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 2,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 3,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          },
+          {
+            "seatNo": 4,
+            "name": "",
+            "dept": "",
+            "bloodGroup": "",
+            "session": "",
+            "district": "",
+            "phone": "",
+            "politics": "",
+            "photo": ""
+          }
+        ]
+      }
+    ]
   }
 ]
